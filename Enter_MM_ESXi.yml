@@ -1,0 +1,25 @@
+---
+- name: Enter MM on ESXi host #vmcloud.pl
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    vcenter_server: "IP_vCenter"
+    vcenter_username: "administrator@vsphere.local"
+    vcenter_password: "pw"
+    esxi_hostname: "IP_ESXi"
+
+  tasks:
+    - name: Enter ESXi Maintenance Mode
+      register: status
+      community.vmware.vmware_maintenancemode:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        esxi_hostname: "{{ esxi_hostname }}"
+        validate_certs: no
+        evacuate: false   #Value true will migrate Powered Off VMs to other host
+        timeout: 3600     #Timeout for the operation
+        state: present
+
+    - debug: var=status.msg
