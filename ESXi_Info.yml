@@ -1,0 +1,47 @@
+---
+- name: ESXi Info #vmcloud.pl
+  hosts: localhost
+  vars:
+    vcenter_server: "vCenter_IP_or_hostname"
+    vcenter_username: "administrator@vsphere.local"
+    vcenter_password: "password"
+    esxi_hostname: "ESXi_IP_or_hostname"
+  tasks:
+    - name: Gather product version info for ESXi from vCenter
+      community.vmware.vmware_host_facts:
+          hostname: "{{ vcenter_server }}"
+          username: "{{ vcenter_username }}"
+          password: "{{ vcenter_password }}"
+          esxi_hostname: "{{ esxi_hostname }}"
+          validate_certs: no
+          schema: vsphere
+          properties:
+            - config.product
+            - config.option
+            - runtime.connectionState
+            - runtime.powerState
+            - hardware.memorySize
+            - hardware.cpuInfo.numCpuCores
+            - config.product.apiVersion
+            - overallStatus
+ 
+      register: gather_host_facts_result
+    - name: Extract update level info from option properties
+      set_fact:
+        update_level_info: "{{ item.value }}"
+      loop: "{{ gather_host_facts_result.ansible_facts.config.option }}"
+      when:
+        - item.key == 'Misc.HostAgentUpdateLevel'
+ 
+    - name: The output of Product, Version, Build, Update info for ESXi
+      debug:
+        msg:
+          - "ESXi    : {{ esxi_hostname }}"
+          - "Product : {{ gather_host_facts_result.ansible_facts.config.product.name }}"
+          - "Version : {{ gather_host_facts_result.ansible_facts.config.product.version }}"
+          - "Build   : {{ gather_host_facts_result.ansible_facts.config.product.build }}"
+          - "Update  : {{ update_level_info }}"
+          - "Runtime : {{ gather_host_facts_result.ansible_facts.runtime.connectionState }}"
+          - "State : {{ gather_host_facts_result.ansible_facts.runtime.powerState }}"
+          - "Memory Size : {{ gather_host_facts_result.ansible_facts.hardware.memorySize}}"
+          - "Cpu Cores : {{ gather_host_facts_result.ansible_facts.hardware.cpuInfo.numCpuCores}}"
