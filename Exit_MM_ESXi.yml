@@ -4,10 +4,10 @@
   gather_facts: no
 
   vars:
-    vcenter_server: "IP_vCenter"
+    vcenter_server: "vCenter_IP_or_hostname"
     vcenter_username: "administrator@vsphere.local"
     vcenter_password: "pw"
-    esxi_hostname: "IP_ESXi"
+    esxi_hostname: "ESXi_hostname"
 
   tasks:
     - name: Exit ESXi Maintenance Mode
