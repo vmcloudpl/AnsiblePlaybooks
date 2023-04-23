@@ -1,0 +1,64 @@
+---
+- name: Patch ESXi host #vmcloud.pl
+  hosts: esxi
+  gather_facts: no
+
+  vars:
+    vcenter_server: "vCenter_IP_or_hostname"
+    vcenter_username: "administrator@vsphere.local"
+    vcenter_password: "pass"
+    esxi_hostname: "ESXi_hostname"
+
+  tasks:
+    - name: Enter ESXi Maintenance Mode
+      register: status
+      community.vmware.vmware_maintenancemode:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        esxi_hostname: "{{ esxi_hostname }}"
+        validate_certs: no
+        evacuate: false   #Value true will migrate Powered Off VMs to other host
+        timeout: 600     #Timeout for the operation (sec)
+        state: present
+      delegate_to: localhost
+      
+    - debug: var=status.msg
+
+    - name: ESXi Install Patch
+      shell: "esxcli software vib install -d /vmfs/volumes/xxxxxxxxxxxxxxxxxxx/Patch.zip"
+ 
+    - name: ESXi reboot
+      vmware_host_powerstate: 
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        esxi_hostname: "{{ esxi_hostname }}"
+        validate_certs: no
+        timeout: 600  #Timeout for the operation (sec)
+        state: reboot-host
+      delegate_to: localhost
+      register: reboot_host
+  
+    - name: ESXi wait for the reboot to complete
+      wait_for:
+        host: "{{ esxi_hostname }}"
+        port: 443
+        delay: 300         #Perform first check after delay (sec)
+        state: started
+        timeout: 600     #Timeout for the operation (sec)
+      delegate_to: localhost  
+
+    - name: Exit ESXi Maintenance Mode
+      register: status
+      community.vmware.vmware_maintenancemode:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        esxi_hostname: "{{ esxi_hostname }}"
+        validate_certs: no
+        timeout: 600     #Timeout for the operation (sec)
+        state: absent
+      delegate_to: localhost
+
+    - debug: var=status.msg
