@@ -17,10 +17,9 @@
         password: "{{ vcenter_password }}"
         esxi_hostname: "{{ esxi_hostname }}"
         validate_certs: no
-        timeout: 3600
+        timeout: 3600   #Timeout for the operation (sec)
         state: reboot-host
-        force: true #This is required to forcely reboot ESXi host when it is not in Maintenance Mode
-      delegate_to: localhost
+        force: true     #This is required to forcely reboot ESXi host when it is not in Maintenance Mode
       register: reboot_host
   
     - name: ESXi wait for the reboot to complete
@@ -29,5 +28,4 @@
         port: 443
         delay: 360        #Perform first check after delay (sec)
         state: started
-        timeout: 3600     #Timeout for the operation
-      delegate_to: localhost  
+        timeout: 3600     #Timeout for the operation (sec)
