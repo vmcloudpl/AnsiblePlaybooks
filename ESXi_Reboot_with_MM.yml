@@ -19,7 +19,7 @@
         esxi_hostname: "{{ esxi_hostname }}"
         validate_certs: no
         evacuate: false   #Value true will migrate Powered Off VMs to other host
-        timeout: 3600     #Timeout for the operation
+        timeout: 3600     #Timeout for the operation (sec)
         state: present
 
     - debug: var=status.msg
@@ -31,19 +31,17 @@
         password: "{{ vcenter_password }}"
         esxi_hostname: "{{ esxi_hostname }}"
         validate_certs: no
-        timeout: 3600
+        timeout: 3600   #Timeout for the operation (sec)
         state: reboot-host
-      delegate_to: localhost
       register: reboot_host
   
     - name: ESXi wait for the reboot to complete
       wait_for:
         host: "{{ esxi_hostname }}"
         port: 443
-        delay: 360        #Perform first check after delay (sec)
+        delay: 600        #Perform first check after delay (sec)
         state: started
-        timeout: 3600     #Timeout for the operation
-      delegate_to: localhost  
+        timeout: 3600     #Timeout for the operation (sec)
 
     - name: Exit ESXi Maintenance Mode
       register: status
@@ -53,7 +51,7 @@
         password: "{{ vcenter_password }}"
         esxi_hostname: "{{ esxi_hostname }}"
         validate_certs: no
-        timeout: 3600     #Timeout for the operation
+        timeout: 3600     #Timeout for the operation (sec)
         state: absent
 
     - debug: var=status.msg
