@@ -19,7 +19,7 @@
         esxi_hostname: "{{ esxi_hostname }}"
         validate_certs: no
         evacuate: false   #Value true will migrate Powered Off VMs to other host
-        timeout: 3600     #Timeout for the operation
+        timeout: 3600     #Timeout for the operation (sec)
         state: present
 
     - debug: var=status.msg
