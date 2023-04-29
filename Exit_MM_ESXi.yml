@@ -18,7 +18,7 @@
         password: "{{ vcenter_password }}"
         esxi_hostname: "{{ esxi_hostname }}"
         validate_certs: no
-        timeout: 3600     #Timeout for the operation
+        timeout: 3600     #Timeout for the operation (sec)
         state: absent
 
     - debug: var=status.msg
